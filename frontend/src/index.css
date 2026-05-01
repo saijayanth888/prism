@@ -1,0 +1,265 @@
+@import "tailwindcss";
+
+/* ═══════════════════════════════════════════
+   VERITAS DESIGN SYSTEM — Prism Platform
+   Linear × Vercel × Sentry aesthetic
+   ═══════════════════════════════════════════ */
+
+/* ── Dark theme (default) ── */
+[data-theme="dark"] {
+  --p-bg-main:       #09090F;
+  --p-bg-deep:       #060609;
+  --p-bg-card:       #111118;
+  --p-bg-elevated:   #16161F;
+  --p-bg-border:     #1A1A26;
+
+  --p-border:        rgba(255, 255, 255, 0.06);
+  --p-border-subtle: rgba(255, 255, 255, 0.03);
+  --p-border-strong: rgba(255, 255, 255, 0.12);
+
+  --p-text-1:  #EDEDF8;
+  --p-text-2:  #8888A8;
+  --p-text-3:  #42425A;
+  --p-text-inv: #09090F;
+
+  --p-accent:        #5E6AD2;
+  --p-accent-hover:  #6C78DF;
+  --p-accent-subtle: rgba(94, 106, 210, 0.12);
+  --p-accent-border: rgba(94, 106, 210, 0.30);
+  --p-accent-glow:   rgba(94, 106, 210, 0.28);
+  --p-accent-2:      #7170FF;
+
+  --p-iris:          #22D3EE;
+  --p-iris-subtle:   rgba(34, 211, 238, 0.10);
+  --p-iris-border:   rgba(34, 211, 238, 0.28);
+  --p-iris-glow:     rgba(34, 211, 238, 0.22);
+
+  --p-green:         #34D399;
+  --p-green-subtle:  rgba(52, 211, 153, 0.10);
+  --p-amber:         #FBBF24;
+  --p-amber-subtle:  rgba(251, 191, 36, 0.10);
+  --p-red:           #F87171;
+  --p-red-subtle:    rgba(248, 113, 113, 0.10);
+
+  --p-surface:          0 0 0 1px rgba(255, 255, 255, 0.06);
+  --p-surface-elevated: 0 0 0 1px rgba(255, 255, 255, 0.08), 0 8px 32px rgba(0, 0, 0, 0.5);
+  --p-surface-float:    0 0 0 1px rgba(255, 255, 255, 0.10), 0 16px 48px rgba(0, 0, 0, 0.6);
+}
+
+/* ── Light theme ── */
+[data-theme="light"] {
+  --p-bg-main:       #F5F5FA;
+  --p-bg-deep:       #EAEAF4;
+  --p-bg-card:       #FFFFFF;
+  --p-bg-elevated:   #F8F8FF;
+  --p-bg-border:     #E2E2EE;
+
+  --p-border:        rgba(0, 0, 0, 0.10);
+  --p-border-subtle: rgba(0, 0, 0, 0.04);
+  --p-border-strong: rgba(0, 0, 0, 0.20);
+
+  --p-text-1:  #0C0C18;
+  --p-text-2:  #3E3E6A;
+  --p-text-3:  #6868A8;
+  --p-text-inv: #FFFFFF;
+
+  --p-accent:        #5E6AD2;
+  --p-accent-hover:  #4E5AC2;
+  --p-accent-subtle: rgba(94, 106, 210, 0.08);
+  --p-accent-border: rgba(94, 106, 210, 0.22);
+  --p-accent-glow:   rgba(94, 106, 210, 0.14);
+  --p-accent-2:      #5857E0;
+
+  --p-iris:          #0EA5E9;
+  --p-iris-subtle:   rgba(14, 165, 233, 0.08);
+  --p-iris-border:   rgba(14, 165, 233, 0.22);
+  --p-iris-glow:     rgba(14, 165, 233, 0.12);
+
+  --p-green:         #10B981;
+  --p-green-subtle:  rgba(16, 185, 129, 0.08);
+  --p-amber:         #D97706;
+  --p-amber-subtle:  rgba(217, 119, 6, 0.08);
+  --p-red:           #EF4444;
+  --p-red-subtle:    rgba(239, 68, 68, 0.08);
+
+  --p-surface:          0 0 0 1px rgba(0, 0, 0, 0.10), 0 1px 4px rgba(0,0,0,0.04);
+  --p-surface-elevated: 0 0 0 1px rgba(0, 0, 0, 0.08), 0 8px 24px rgba(0, 0, 0, 0.06);
+  --p-surface-float:    0 0 0 1px rgba(0, 0, 0, 0.10), 0 16px 40px rgba(0, 0, 0, 0.10);
+}
+
+/* ── Reset & base ── */
+*, *::before, *::after { box-sizing: border-box; }
+html { height: 100%; }
+
+body {
+  margin: 0;
+  font-family: "Geist", "Inter", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  height: 100%;
+  background: var(--p-bg-main);
+  color: var(--p-text-1);
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+#root { height: 100%; }
+
+/* ── Typography utilities ── */
+
+/* Legacy / structural */
+.font-display { font-family: "Syne", "Space Grotesk", sans-serif; }
+.font-ui      { font-family: "Geist", system-ui, sans-serif; }
+.font-mono    { font-family: "JetBrains Mono", "Fira Code", monospace !important; }
+
+/* MiniMax design-system fonts */
+.font-outfit   { font-family: "Outfit", "Helvetica Neue", sans-serif; }
+.font-dm-sans  { font-family: "DM Sans", "Helvetica Neue", sans-serif; }
+.font-poppins  { font-family: "Poppins", "Helvetica Neue", sans-serif; }
+.font-roboto   { font-family: "Roboto", "Helvetica Neue", sans-serif; }
+.font-geist-mono { font-family: "Geist Mono", "JetBrains Mono", monospace; }
+
+code, kbd, pre { font-family: "JetBrains Mono", "Fira Code", monospace; }
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar          { width: 4px; height: 4px; }
+::-webkit-scrollbar-track    { background: transparent; }
+::-webkit-scrollbar-thumb    { background: var(--p-bg-border); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: var(--p-text-3); }
+* { scrollbar-width: thin; scrollbar-color: var(--p-bg-border) transparent; }
+
+/* ── Selection ── */
+::selection {
+  background: var(--p-accent-subtle);
+  color: var(--p-accent);
+}
+
+/* ── Focus ── */
+:focus-visible {
+  outline: 2px solid var(--p-accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ══════════════════════════════
+   ANIMATION KEYFRAMES
+   ══════════════════════════════ */
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.96); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.45; }
+}
+
+@keyframes ping {
+  75%, 100% { transform: scale(2); opacity: 0; }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+    animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
+  }
+  50% {
+    transform: translateY(-5px);
+    animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+  }
+}
+
+@keyframes dotPulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50%       { transform: scale(1.4); opacity: 0.7; }
+}
+
+@keyframes gradientShift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes scanLine {
+  0%   { transform: translateY(-100%); }
+  100% { transform: translateY(100vh); }
+}
+
+/* ══════════════════════════════
+   COMPONENT BASE STYLES
+   ══════════════════════════════ */
+
+/* Card */
+.p-card {
+  background: var(--p-bg-card);
+  border-radius: 12px;
+  box-shadow: var(--p-surface);
+  transition: box-shadow 0.15s ease;
+}
+.p-card:hover { box-shadow: var(--p-surface-elevated); }
+
+/* Badge */
+.p-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 500;
+  font-family: "JetBrains Mono", monospace;
+}
+
+/* Button base */
+.p-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  transition: all 0.15s ease;
+  font-family: "Geist", system-ui, sans-serif;
+}
+
+.p-btn-primary {
+  background: var(--p-accent);
+  color: #FFFFFF;
+}
+.p-btn-primary:hover { background: var(--p-accent-hover); }
+
+.p-btn-ghost {
+  background: transparent;
+  color: var(--p-text-2);
+  box-shadow: var(--p-surface);
+}
+.p-btn-ghost:hover { color: var(--p-text-1); box-shadow: var(--p-surface-elevated); }
+
+/* Status dot */
+.p-status-live  { background: var(--p-green);  border-radius: 50%; animation: pulse 2s infinite; }
+.p-status-warn  { background: var(--p-amber);  border-radius: 50%; }
+.p-status-error { background: var(--p-red);    border-radius: 50%; animation: pulse 1.5s infinite; }
