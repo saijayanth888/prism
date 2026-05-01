@@ -94,13 +94,26 @@ export default function IrisChat() {
   return (
     <div className="flex flex-col h-full" style={{ background: "var(--p-bg)", fontFamily: ui }}>
 
+      {/* ── Page title ──────────────────────────────────── */}
+      <div style={{ padding: "20px 28px 0" }}>
+        <div className="text-[10px] font-mono uppercase tracking-[0.14em] mb-1" style={{ color: "var(--p-text-3)" }}>
+          AI COPILOT · GRAPH-GROUNDED
+        </div>
+        <h1 style={{ fontFamily: '"Instrument Sans", system-ui, sans-serif', fontSize: 24, fontWeight: 700, letterSpacing: "-0.025em", color: "var(--p-text-1)", margin: 0 }}>
+          Iris
+        </h1>
+        <p className="text-xs mt-1 font-mono" style={{ color: "var(--p-text-3)" }}>
+          Ask anything about your infrastructure — Iris reads the live graph and cites every answer. No hallucinations.
+        </p>
+      </div>
+
       {/* ── Header ─────────────────────────────────────── */}
       <div
         className="flex items-center justify-between flex-shrink-0"
         style={{
           background: "var(--p-bg)",
           borderBottom: "1px solid var(--p-border)",
-          padding: "0 28px",
+          padding: "12px 28px 0",
           height: 56,
         }}
       >

@@ -9,13 +9,13 @@ interface Props {
 
 export default function IrisQuickAsk({ prompts, context }: Props) {
   const navigate = useNavigate();
-  const setOpen = useChatStore((s) => s.toggleChat);
+  const toggleChat = useChatStore((s) => s.toggleChat);
   const isOpen = useChatStore((s) => s.isOpen);
+  const setPendingQuery = useChatStore((s) => s.setPendingQuery);
 
   const ask = (q: string) => {
-    if (!isOpen) setOpen();
-    // The IrisPanel reads from store; we just open it. Optionally seed via store if API exists.
-    void q;
+    setPendingQuery(q);
+    if (!isOpen) toggleChat();
   };
 
   return (

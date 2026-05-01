@@ -64,11 +64,18 @@ export default function Changes() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-bold text-white">Change Impact</h1>
-          <p className="text-xs text-slate-500 mt-0.5 font-mono">Live event log · topology diffs · CPT-resolved</p>
+          <div className="text-[10px] font-mono uppercase tracking-[0.14em] mb-1" style={{ color: "var(--p-text-3)" }}>
+            CHANGE IMPACT · LIVE EVENT LOG
+          </div>
+          <h1 className="text-xl font-bold" style={{ color: "var(--p-text-1)", fontFamily: '"Instrument Sans", system-ui, sans-serif', letterSpacing: "-0.025em" }}>
+            Change Impact
+          </h1>
+          <p className="text-xs mt-0.5 font-mono" style={{ color: "var(--p-text-3)" }}>
+            Every topology mutation, health shift, CVE, and sync — streamed in real time and resolved through CPT
+          </p>
         </div>
-        <div className="flex items-center gap-2 text-[11px] font-mono" style={{ color: "#22D3EE" }}>
-          <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+        <div className="flex items-center gap-2 text-[11px] font-mono" style={{ color: "var(--p-accent)" }}>
+          <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: "var(--p-green)" }} />
           Streaming
         </div>
       </div>
@@ -82,7 +89,7 @@ export default function Changes() {
           { label: "New CVEs", value: "2", color: "#EA580C" },
         ].map((s) => (
           <div key={s.label} className="p-3 rounded-xl" style={{ background: "var(--p-bg-card)", border: "1px solid var(--p-border)" }}>
-            <div className="text-[10px] text-slate-600 uppercase tracking-wider mb-1">{s.label}</div>
+            <div className="text-[10px] uppercase tracking-wider mb-1" style={{ color: "var(--p-text-3)" }}>{s.label}</div>
             <div className="text-xl font-mono font-bold" style={{ color: s.color }}>{s.value}</div>
           </div>
         ))}
@@ -94,7 +101,7 @@ export default function Changes() {
           <button key={f.key} onClick={() => setFilter(f.key)}
             className="px-3 py-1.5 rounded-lg text-[11px] font-medium transition-all"
             style={{
-              background: filter === f.key ? "rgba(34,211,238,0.12)" : "#151D2E",
+              background: filter === f.key ? "rgba(34,211,238,0.12)" : "var(--p-bg-elevated)",
               color: filter === f.key ? "#22D3EE" : "var(--p-text-3)",
               border: `1px solid ${filter === f.key ? "rgba(34,211,238,0.3)" : "var(--p-bg-border)"}`,
             }}>
@@ -138,7 +145,7 @@ export default function Changes() {
                       style={{ color: SEV_COLOR[ev.severity] }}>{ev.severity}</span>
                   )}
                 </div>
-                <div className="text-[11px] text-slate-500 leading-snug">{ev.description}</div>
+                <div className="text-[11px] leading-snug" style={{ color: "var(--p-text-2)" }}>{ev.description}</div>
                 {ev.meta && (
                   <div className="text-[10px] font-mono mt-0.5" style={{ color: "#22D3EE", opacity: 0.7 }}>
                     <GitMerge size={8} className="inline mr-1" />{ev.meta}
@@ -148,8 +155,8 @@ export default function Changes() {
 
               {/* Time */}
               <div className="flex-shrink-0 text-right">
-                <div className="text-[10px] text-slate-600 font-mono">{ev.ago}</div>
-                <div className="text-[9px] text-slate-700 font-mono mt-0.5">{ev.time}</div>
+                <div className="text-[10px] font-mono" style={{ color: "var(--p-text-3)" }}>{ev.ago}</div>
+                <div className="text-[9px] font-mono mt-0.5" style={{ color: "var(--p-text-3)", opacity: 0.7 }}>{ev.time}</div>
               </div>
             </div>
           );
@@ -157,7 +164,7 @@ export default function Changes() {
       </div>
 
       <div className="text-center">
-        <span className="text-[10px] text-slate-700 font-mono">
+        <span className="text-[10px] font-mono" style={{ color: "var(--p-text-3)" }}>
           Showing {filtered.length} of 47 events · last 24 hours
         </span>
       </div>

@@ -26,6 +26,8 @@ export default function Settings() {
   const [saved, setSaved] = useState(false);
   const [model, setModel] = useState("claude-sonnet-4-6");
   const [syncInterval, setSyncInterval] = useState("5");
+  const [antiHallucination, setAntiHallucination] = useState(true);
+  const [realtimeUpdates, setRealtimeUpdates] = useState(true);
 
   const handleSave = () => {
     setSaved(true);
@@ -162,10 +164,11 @@ export default function Settings() {
               <div className="text-xs font-medium" style={{ color: "var(--p-text-1)" }}>Anti-hallucination safeguards</div>
               <div className="text-[10px] mt-0.5" style={{ color: "var(--p-text-3)" }}>Enforce mandatory graph query before every Iris response</div>
             </div>
-            <div className="w-10 h-5 rounded-full flex items-center px-0.5 cursor-pointer"
-              style={{ background: "var(--p-iris)" }}>
-              <div className="w-4 h-4 rounded-full ml-auto" style={{ background: "var(--p-bg-deep)" }} />
-            </div>
+            <button onClick={() => setAntiHallucination(v => !v)}
+              className="w-10 h-5 rounded-full flex items-center px-0.5 cursor-pointer transition-all"
+              style={{ background: antiHallucination ? "var(--p-iris)" : "var(--p-bg-border)", justifyContent: antiHallucination ? "flex-end" : "flex-start" }}>
+              <div className="w-4 h-4 rounded-full" style={{ background: "var(--p-bg-deep)" }} />
+            </button>
           </div>
 
           <div className="flex items-center justify-between py-2" style={{ borderTop: "1px solid var(--p-border)" }}>
@@ -173,10 +176,11 @@ export default function Settings() {
               <div className="text-xs font-medium" style={{ color: "var(--p-text-1)" }}>Real-time topology updates</div>
               <div className="text-[10px] mt-0.5" style={{ color: "var(--p-text-3)" }}>Push graph changes to all connected clients via WebSocket</div>
             </div>
-            <div className="w-10 h-5 rounded-full flex items-center px-0.5 cursor-pointer"
-              style={{ background: "var(--p-iris)" }}>
-              <div className="w-4 h-4 rounded-full ml-auto" style={{ background: "var(--p-bg-deep)" }} />
-            </div>
+            <button onClick={() => setRealtimeUpdates(v => !v)}
+              className="w-10 h-5 rounded-full flex items-center px-0.5 cursor-pointer transition-all"
+              style={{ background: realtimeUpdates ? "var(--p-iris)" : "var(--p-bg-border)", justifyContent: realtimeUpdates ? "flex-end" : "flex-start" }}>
+              <div className="w-4 h-4 rounded-full" style={{ background: "var(--p-bg-deep)" }} />
+            </button>
           </div>
         </div>
       </div>

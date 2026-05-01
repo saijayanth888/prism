@@ -240,8 +240,16 @@ export default function IrisPanel() {
   const isDark = useThemeStore((s) => s.isDark); const C = paletteFor(isDark);
   const [focused, setFocused] = useState(false);
 
-  const { toggleChat, isStreaming, persona, setPersona, clearMessages } = useChatStore();
+  const { toggleChat, isStreaming, persona, setPersona, clearMessages, pendingQuery, setPendingQuery } = useChatStore();
   const { sendMessage, connected, messages } = useIris();
+
+  useEffect(() => {
+    if (pendingQuery) {
+      setInput(pendingQuery);
+      setPendingQuery(null);
+      setTimeout(() => inputRef.current?.focus(), 50);
+    }
+  }, [pendingQuery, setPendingQuery]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });

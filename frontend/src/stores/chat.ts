@@ -7,12 +7,14 @@ interface ChatState {
   isStreaming: boolean;
   persona: Persona;
   sessionId: string;
+  pendingQuery: string | null;
   addMessage: (message: ChatMessage) => void;
   toggleChat: () => void;
   openChat: () => void;
   setStreaming: (streaming: boolean) => void;
   setPersona: (persona: Persona) => void;
   clearMessages: () => void;
+  setPendingQuery: (q: string | null) => void;
 }
 
 function generateSessionId() {
@@ -25,6 +27,7 @@ export const useChatStore = create<ChatState>((set) => ({
   isStreaming: false,
   persona: "developer",
   sessionId: generateSessionId(),
+  pendingQuery: null,
 
   addMessage: (message) =>
     set((state) => ({ messages: [...state.messages, message] })),
@@ -39,4 +42,6 @@ export const useChatStore = create<ChatState>((set) => ({
 
   clearMessages: () =>
     set({ messages: [], sessionId: generateSessionId() }),
+
+  setPendingQuery: (q) => set({ pendingQuery: q }),
 }));

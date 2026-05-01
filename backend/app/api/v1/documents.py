@@ -74,7 +74,7 @@ async def _process_document(doc_id: str, content: bytes, request: Request):
             extractor = DocumentEntityExtractor(llm)
             result = await extractor.extract(doc, parsed)
         except Exception as e:
-            log.warning("llm_extraction_failed, using_mock", error=str(e))
+            log.warning(f"llm_extraction_failed, using_mock error={e}")
             result = _mock_extraction(doc, parsed)
 
         _results[doc_id] = result
@@ -90,7 +90,7 @@ async def _process_document(doc_id: str, content: bytes, request: Request):
                 enricher = DocumentGraphEnricher(client)
                 await enricher.enrich(doc, result)
         except Exception as e:
-            log.warning("graph_enrichment_failed", error=str(e))
+            log.warning(f"graph_enrichment_failed error={e}")
 
         doc_store.update_status(
             doc_id,
@@ -99,10 +99,10 @@ async def _process_document(doc_id: str, content: bytes, request: Request):
             entity_count=len(result.entities),
             chunk_count=len(_chunk_text_count(parsed.text)),
         )
-        log.info("document_processed", doc_id=doc_id, entities=len(result.entities))
+        log.info(f"document_processed doc_id={doc_id} entities={len(result.entities)}")
 
     except Exception as e:
-        log.error("document_processing_failed", doc_id=doc_id, error=str(e))
+        log.error(f"document_processing_failed doc_id={doc_id} error={e}")
         doc_store.update_status(doc_id, DocumentStatus.FAILED, error=str(e))
 
 

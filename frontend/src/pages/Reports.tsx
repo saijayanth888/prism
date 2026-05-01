@@ -1,4 +1,4 @@
-import { LineChart, Plus, Sparkles, Mail, FileText } from "lucide-react";
+import { LineChart, Plus, Sparkles, Mail, FileText, X, Check, ChevronDown } from "lucide-react";
 import { useState } from "react";
 import PageHead from "../components/common/PageHead";
 import MetricCard from "../components/dashboard/MetricCard";
@@ -208,8 +208,116 @@ function formatIcon(format: string) {
   return <FileText size={13} style={{ color: "var(--p-text-3)" }} />;
 }
 
+/* ──────────────────────────────────────────────
+   New Report Modal
+   ────────────────────────────────────────────── */
+function NewReportModal({ onClose }: { onClose: () => void }) {
+  const [name, setName] = useState("");
+  const [type, setType] = useState("compliance");
+  const [schedule, setSchedule] = useState("daily");
+  const [recipients, setRecipients] = useState("");
+  const [format, setFormat] = useState("PDF");
+  const [saved, setSaved] = useState(false);
+
+  const handleCreate = () => {
+    if (!name.trim()) return;
+    setSaved(true);
+    setTimeout(() => { setSaved(false); onClose(); }, 1200);
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center"
+      style={{ background: "rgba(0,0,0,0.6)", backdropFilter: "blur(4px)" }}
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className="w-full max-w-lg rounded-2xl overflow-hidden flex flex-col"
+        style={{ background: "var(--p-bg-card)", boxShadow: "var(--p-surface-float)" }}>
+        <div className="flex items-center gap-3 px-6 py-5" style={{ borderBottom: "1px solid var(--p-border)" }}>
+          <LineChart size={16} style={{ color: "var(--p-accent)" }} />
+          <span className="text-[15px] font-semibold flex-1" style={{ color: "var(--p-text-1)" }}>New report</span>
+          <button onClick={onClose} style={{ color: "var(--p-text-3)" }}><X size={16} /></button>
+        </div>
+        <div className="px-6 py-5 space-y-4">
+          <div className="space-y-1.5">
+            <label className="text-[12px] font-medium" style={{ color: "var(--p-text-2)" }}>Report name *</label>
+            <input value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Weekly PCI-DSS gap summary"
+              className="w-full px-3 py-2 rounded-lg text-[13px] outline-none"
+              style={{ background: "var(--p-bg-elevated)", border: "1px solid var(--p-border)", color: "var(--p-text-1)" }}
+              onFocus={e => { (e.currentTarget as HTMLElement).style.borderColor = "var(--p-accent)"; }}
+              onBlur={e => { (e.currentTarget as HTMLElement).style.borderColor = "var(--p-border)"; }} />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <label className="text-[12px] font-medium" style={{ color: "var(--p-text-2)" }}>Report type</label>
+              <div className="relative">
+                <select value={type} onChange={e => setType(e.target.value)}
+                  className="w-full px-3 py-2 rounded-lg text-[12px] outline-none appearance-none"
+                  style={{ background: "var(--p-bg-elevated)", border: "1px solid var(--p-border)", color: "var(--p-text-1)" }}>
+                  <option value="compliance">Compliance evidence</option>
+                  <option value="health">Health dashboard</option>
+                  <option value="vulnerabilities">Vulnerability posture</option>
+                  <option value="blast_radius">Blast radius</option>
+                  <option value="cost">Cost by application</option>
+                  <option value="changes">Change impact</option>
+                  <option value="custom">Custom query</option>
+                </select>
+                <ChevronDown size={12} className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: "var(--p-text-3)" }} />
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-[12px] font-medium" style={{ color: "var(--p-text-2)" }}>Format</label>
+              <div className="flex gap-1.5">
+                {["PDF", "CSV", "Slack", "Email"].map(f => (
+                  <button key={f} onClick={() => setFormat(f)}
+                    className="flex-1 py-2 rounded-lg text-[11px] font-mono transition-all"
+                    style={{
+                      background: format === f ? "var(--p-accent-subtle)" : "var(--p-bg-elevated)",
+                      color: format === f ? "var(--p-accent)" : "var(--p-text-3)",
+                      border: `1px solid ${format === f ? "var(--p-accent-border)" : "var(--p-border)"}`,
+                    }}>{f}</button>
+                ))}
+              </div>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <label className="text-[12px] font-medium" style={{ color: "var(--p-text-2)" }}>Schedule</label>
+              <div className="relative">
+                <select value={schedule} onChange={e => setSchedule(e.target.value)}
+                  className="w-full px-3 py-2 rounded-lg text-[12px] outline-none appearance-none"
+                  style={{ background: "var(--p-bg-elevated)", border: "1px solid var(--p-border)", color: "var(--p-text-1)" }}>
+                  <option value="realtime">Real-time</option>
+                  <option value="daily">Daily · 9am</option>
+                  <option value="weekly">Weekly · Mon 9am</option>
+                  <option value="monthly">Monthly · 1st</option>
+                  <option value="manual">Manual only</option>
+                </select>
+                <ChevronDown size={12} className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: "var(--p-text-3)" }} />
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-[12px] font-medium" style={{ color: "var(--p-text-2)" }}>Recipients (emails)</label>
+              <input value={recipients} onChange={e => setRecipients(e.target.value)}
+                placeholder="jordan@, sara@"
+                className="w-full px-3 py-2 rounded-lg text-[12px] outline-none"
+                style={{ background: "var(--p-bg-elevated)", border: "1px solid var(--p-border)", color: "var(--p-text-1)" }} />
+            </div>
+          </div>
+        </div>
+        <div className="flex items-center justify-end gap-3 px-6 py-4" style={{ borderTop: "1px solid var(--p-border)" }}>
+          <button onClick={onClose} className="px-4 py-2 rounded-lg text-[12px]" style={{ color: "var(--p-text-2)" }}>Cancel</button>
+          <button onClick={handleCreate} disabled={!name.trim()}
+            className="inline-flex items-center gap-1.5 px-5 py-2 rounded-lg text-[12px] font-semibold"
+            style={{ background: saved ? "var(--p-green)" : name.trim() ? "var(--p-accent)" : "var(--p-bg-elevated)", color: name.trim() ? "#fff" : "var(--p-text-3)" }}>
+            {saved ? <><Check size={12} /> Created!</> : "Create report"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function Reports() {
-  const [, setGenerating] = useState(false);
+  const [showNew, setShowNew] = useState(false);
 
   return (
     <div className="min-h-screen" style={{ background: "var(--p-bg-main)" }}>
@@ -219,9 +327,9 @@ export default function Reports() {
         subtitle={`${REPORTS.length} reports running on schedule. Every report is reproducible — runs against the canonical graph at any point in time. Iris can narrate any report.`}
         actions={
           <>
-            <HeaderButton>Templates</HeaderButton>
-            <HeaderButton variant="iris" icon={<Sparkles size={12} />}>Iris briefing</HeaderButton>
-            <HeaderButton variant="primary" icon={<Plus size={12} />} onClick={() => setGenerating(true)}>
+            <HeaderButton onClick={() => window.open("https://docs.prism.internal/reports/templates", "_blank")}>Templates</HeaderButton>
+            <HeaderButton variant="iris" icon={<Sparkles size={12} />} onClick={() => window.location.assign("/iris")}>Iris briefing</HeaderButton>
+            <HeaderButton variant="primary" icon={<Plus size={12} />} onClick={() => setShowNew(true)}>
               New report
             </HeaderButton>
           </>
@@ -352,6 +460,7 @@ export default function Reports() {
           </div>
         </div>
       </div>
+      {showNew && <NewReportModal onClose={() => setShowNew(false)} />}
     </div>
   );
 }
