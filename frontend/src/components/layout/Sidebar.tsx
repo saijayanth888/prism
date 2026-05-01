@@ -8,6 +8,7 @@ import {
   ChevronRight,
   FileSearch,
   GitMerge,
+  LayoutGrid,
   Layers,
   Network,
   PlugZap,
@@ -21,6 +22,12 @@ import { useQuery } from "@tanstack/react-query";
 import apiClient from "../../api/client";
 
 const NAV_SECTIONS = [
+  {
+    label: "Overview",
+    items: [
+      { to: "/dashboard", icon: LayoutGrid, label: "Dashboard" },
+    ],
+  },
   {
     label: "Explore",
     items: [
@@ -103,15 +110,15 @@ export default function Sidebar() {
               <div>
                 <div
                   className="text-[14px] font-bold leading-none tracking-tight"
-                  style={{ fontFamily: '"Syne", sans-serif', color: "var(--p-text-1)" }}
+                  style={{ fontFamily: '"Instrument Sans", system-ui, sans-serif', color: "var(--p-text-1)", letterSpacing: "-0.02em" }}
                 >
                   prism
                 </div>
                 <div
-                  className="text-[9px] leading-none mt-0.5 font-mono"
-                  style={{ color: "var(--p-text-3)" }}
+                  className="text-[9px] leading-none mt-1 font-mono uppercase"
+                  style={{ color: "var(--p-text-3)", letterSpacing: "0.12em" }}
                 >
-                  CPT Engine
+                  CPT ENGINE
                 </div>
               </div>
             </div>
@@ -299,7 +306,7 @@ export default function Sidebar() {
             <div className="flex items-center justify-between">
               <span className="text-[10px]" style={{ color: "var(--p-text-3)" }}>Platforms</span>
               <span className="text-[10px] font-mono" style={{ color: "var(--p-text-2)" }}>
-                {metrics?.platform_count ?? 13}
+                {metrics?.platform_count ?? 16}
               </span>
             </div>
             <div
@@ -310,8 +317,8 @@ export default function Sidebar() {
                 className="w-1.5 h-1.5 rounded-full flex-shrink-0"
                 style={{ background: "var(--p-green)", animation: "pulse 2s infinite" }}
               />
-              <span className="text-[10px]" style={{ color: "var(--p-text-3)" }}>
-                All systems operational
+              <span className="text-[10px] font-mono" style={{ color: "var(--p-text-3)" }}>
+                connected · 16 platforms
               </span>
             </div>
           </div>

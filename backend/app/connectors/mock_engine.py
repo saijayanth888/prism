@@ -1,5 +1,5 @@
 """
-Synthetic data engine — generates realistic 13-platform mock data for CIO demos.
+Synthetic data engine — generates realistic 16-platform mock data for CIO demos.
 Key design: the SAME service appears with DIFFERENT names on each platform,
 which is what the CPT Engine must resolve.
 """
@@ -129,7 +129,7 @@ class ApplicationSpec:
 
 
 class MockDataEngine:
-    """Generates interconnected mock Perspectives across 13 platforms."""
+    """Generates interconnected mock Perspectives across 16 platforms."""
 
     def __init__(self, seed: int = 42):
         random.seed(seed)
@@ -154,6 +154,9 @@ class MockDataEngine:
             self._vault_perspective(apps),
             self._sonarqube_perspective(apps),
             self._nexus_perspective(apps),
+            self._sharepoint_perspective(apps),
+            self._jfrog_perspective(apps),
+            self._openshift_perspective(apps),
         ]
 
     def _generate_app_specs(self, config: dict) -> list[ApplicationSpec]:
@@ -684,4 +687,134 @@ class MockDataEngine:
             entities=entities,
             relationships=[],
             authority_domains=["image_tag", "digest", "vulnerabilities_critical"],
+        )
+
+    def _sharepoint_perspective(self, apps: list[ApplicationSpec]) -> Perspective:
+        """SharePoint: runbooks, architecture docs, wikis for services."""
+        entities: list[PerspectiveEntity] = []
+        seen: set[str] = set()
+
+        for spec in apps:
+            sid = f"sp-doc-{spec.domain}-{spec.service_name}"
+            if sid in seen:
+                continue
+            seen.add(sid)
+
+            doc_type = random.choice(["Runbook", "Architecture", "API Guide", "Onboarding"])
+            entities.append(PerspectiveEntity(
+                entity_id=sid,
+                # SharePoint names things with title-case and spaces
+                name=f"{spec.service_name.replace('-', ' ').title()} — {doc_type}",
+                platform="sharepoint",
+                entity_type=EntityType.APPLICATION,
+                namespace=spec.domain,
+                environment=spec.env,
+                labels=spec.labels,
+                observed_at=_rand_dt(1),
+                properties={
+                    "site_collection": f"https://acme.sharepoint.com/sites/{spec.domain}",
+                    "document_url": f"https://acme.sharepoint.com/sites/{spec.domain}/Shared%20Documents/{spec.service_name}-{doc_type.lower().replace(' ', '-')}.docx",
+                    "content_type": doc_type,
+                    "last_modified_by": random.choice([
+                        "alice.chen@acme.com", "bob.kumar@acme.com",
+                        "carol.smith@acme.com", "david.jones@acme.com",
+                    ]),
+                    "classification": random.choice(["Internal", "Confidential", "Public"]),
+                    "page_views": random.randint(5, 500),
+                },
+            ))
+
+        return Perspective(
+            platform="sharepoint",
+            entities=entities,
+            relationships=[],
+            authority_domains=["document_url", "site_collection", "classification"],
+        )
+
+    def _jfrog_perspective(self, apps: list[ApplicationSpec]) -> Perspective:
+        """JFrog Artifactory: Docker images as alternative to Nexus registry."""
+        entities: list[PerspectiveEntity] = []
+        seen: set[str] = set()
+
+        for spec in apps:
+            jid = f"jfrog-img-{spec.domain}-{spec.service_name}-v{spec.version}"
+            if jid in seen:
+                continue
+            seen.add(jid)
+
+            build_num = random.randint(100, 9999)
+            entities.append(PerspectiveEntity(
+                entity_id=jid,
+                # JFrog uses full artifact path as name (different from Nexus)
+                name=f"acme-docker-local/{spec.domain}/{spec.service_name}:{spec.version}.0.{build_num}",
+                platform="jfrog",
+                entity_type=EntityType.IMAGE,
+                namespace=spec.domain,
+                environment=spec.env,
+                labels=spec.labels,
+                observed_at=_rand_dt(1),
+                properties={
+                    "artifact_path": f"acme-docker-local/{spec.domain}/{spec.service_name}/{spec.version}.0.{build_num}",
+                    "build_name": f"{spec.service_name}-pipeline",
+                    "build_number": build_num,
+                    "package_type": "docker",
+                    "xray_violations": random.randint(0, 5) if spec.has_vulns else 0,
+                    "download_count": random.randint(1, 200),
+                },
+            ))
+
+        return Perspective(
+            platform="jfrog",
+            entities=entities,
+            relationships=[],
+            authority_domains=["artifact_path", "build_name", "xray_violations"],
+        )
+
+    def _openshift_perspective(self, apps: list[ApplicationSpec]) -> Perspective:
+        """OpenShift: DeploymentConfigs and Routes (alternative to plain k8s)."""
+        entities: list[PerspectiveEntity] = []
+        edges: list[PerspectiveEdge] = []
+
+        for spec in apps:
+            eid = f"ocp-dc-{spec.env}-{spec.domain}-{spec.service_name}"
+            # OpenShift project names use domain prefix (different from k8s namespace)
+            project = f"{spec.env}-{spec.domain}"
+            route_host = f"{spec.service_name}-{project}.apps.ocp.acme.io"
+
+            entities.append(PerspectiveEntity(
+                entity_id=eid,
+                # OpenShift names match k8s but prefixed with project
+                name=f"{project}/{spec.service_name}",
+                platform="openshift",
+                entity_type=EntityType.DEPLOYMENT,
+                namespace=spec.domain,
+                environment=spec.env,
+                labels=spec.labels,
+                observed_at=_rand_dt(1),
+                properties={
+                    "route_url": f"https://{route_host}",
+                    "build_config": f"bc/{spec.service_name}",
+                    "deployment_config": f"dc/{spec.service_name}",
+                    "project_name": project,
+                    "scc_policy": random.choice(["restricted", "anyuid", "privileged"]),
+                    "replicas": spec.replica_count,
+                },
+            ))
+
+            for dep_idx in spec.depends_on_indices:
+                dep_spec = apps[dep_idx] if dep_idx < len(apps) else None
+                if dep_spec:
+                    dep_eid = f"ocp-dc-{dep_spec.env}-{dep_spec.domain}-{dep_spec.service_name}"
+                    edges.append(PerspectiveEdge(
+                        source_id=eid,
+                        target_id=dep_eid,
+                        relationship_type=RelationshipType.DEPENDS_ON,
+                        platform="openshift",
+                    ))
+
+        return Perspective(
+            platform="openshift",
+            entities=entities,
+            relationships=edges,
+            authority_domains=["route_url", "build_config", "deployment_config", "scc_policy"],
         )

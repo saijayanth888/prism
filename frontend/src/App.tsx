@@ -6,6 +6,7 @@ import BlastRadius from "./pages/BlastRadius";
 import Changes from "./pages/Changes";
 import ComplianceCenter from "./pages/ComplianceCenter";
 import Connectors from "./pages/Connectors";
+import Dashboard from "./pages/Dashboard";
 import Docs from "./pages/Docs";
 import Documents from "./pages/Documents";
 import HealthDashboard from "./pages/HealthDashboard";
@@ -32,6 +33,7 @@ export default function App() {
 
           {/* App shell — all authenticated routes */}
           <Route element={<Shell />}>
+            <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/topology" element={<TopologyExplorer />} />
             <Route path="/app/:id?" element={<ApplicationLens />} />
             <Route path="/compliance" element={<ComplianceCenter />} />

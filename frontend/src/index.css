@@ -93,7 +93,7 @@ html { height: 100%; }
 
 body {
   margin: 0;
-  font-family: "Geist", "Inter", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  font-family: "Instrument Sans", "Geist", "Inter", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   font-size: 14px;
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;

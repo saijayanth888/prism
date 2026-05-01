@@ -60,6 +60,65 @@ AUTHORITY_MATRIX: dict[str, dict[str, float]] = {
         "policy": 1.0,
         "engine_type": 1.0,
     },
+    "aws": {
+        "instance_class": 1.0,
+        "multi_az": 1.0,
+        "storage_gb": 1.0,
+        "engine": 0.9,
+        "version": 0.8,
+        "availability_zone": 1.0,
+    },
+    "terraform": {
+        "workspace": 1.0,
+        "resource_count": 1.0,
+        "state_backend": 1.0,
+        "last_apply": 1.0,
+        "drift_detected": 1.0,
+    },
+    "servicenow": {
+        "business_criticality": 1.0,
+        "support_group": 1.0,
+        "cmdb_class": 1.0,
+        "open_incidents": 1.0,
+        "change_requests": 1.0,
+    },
+    "jira": {
+        "project_key": 1.0,
+        "velocity": 1.0,
+        "sprint_goal": 1.0,
+        "team": 0.9,
+        "open_issues": 1.0,
+    },
+    "nexus": {
+        "image_tag": 1.0,
+        "digest": 1.0,
+        "size_mb": 1.0,
+        "base_image": 0.9,
+        "vulnerabilities_critical": 1.0,
+        "vulnerabilities_high": 1.0,
+        "scan_passed": 1.0,
+    },
+    "sharepoint": {
+        "document_url": 1.0,
+        "site_collection": 1.0,
+        "content_type": 1.0,
+        "last_modified_by": 1.0,
+        "classification": 1.0,
+    },
+    "jfrog": {
+        "artifact_path": 1.0,
+        "build_name": 1.0,
+        "build_number": 1.0,
+        "package_type": 1.0,
+        "xray_violations": 1.0,
+    },
+    "openshift": {
+        "route_url": 1.0,
+        "build_config": 1.0,
+        "deployment_config": 1.0,
+        "project_name": 0.8,
+        "scc_policy": 1.0,
+    },
 }
 
 # Default authority weight for any platform not in matrix
@@ -69,12 +128,18 @@ DEFAULT_AUTHORITY = 0.5
 NAME_AUTHORITY: dict[str, float] = {
     "apiconnect": 0.9,
     "kubernetes": 0.8,
+    "openshift": 0.8,
     "github": 0.75,
     "confluent": 0.8,
-    "datadog": 0.5,
-    "argocd": 0.6,
     "servicenow": 0.7,
+    "aws": 0.6,
+    "argocd": 0.6,
     "jira": 0.6,
+    "datadog": 0.5,
+    "terraform": 0.5,
+    "nexus": 0.5,
+    "jfrog": 0.5,
+    "sharepoint": 0.4,
 }
 
 

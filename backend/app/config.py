@@ -21,7 +21,7 @@ class PrismSettings(BaseSettings):
     # Application
     environment: str = "development"
     log_level: str = "debug"
-    cors_origins: str = "http://localhost:3000"
+    cors_origins: str = "http://localhost:3000,http://localhost:3001,http://localhost:5173,http://127.0.0.1:3000,http://127.0.0.1:3001"
 
     # Auth
     jwt_secret: str = "prism-dev-secret-change-in-production"

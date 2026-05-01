@@ -1,169 +1,355 @@
-import { Download, FileText, Plus, RefreshCw } from "lucide-react";
+import { LineChart, Plus, Sparkles, Mail, FileText } from "lucide-react";
 import { useState } from "react";
+import PageHead from "../components/common/PageHead";
+import MetricCard from "../components/dashboard/MetricCard";
+import IrisQuickAsk from "../components/common/IrisQuickAsk";
 
-const REPORTS = [
-  {
-    id: "r1", name: "Q1 2025 Compliance Summary", type: "Compliance",
-    generated: "2025-01-28", status: "ready", size: "2.4 MB",
-    desc: "PCI-DSS, SOC2, HIPAA gap analysis across all 1,675 entities",
-  },
-  {
-    id: "r2", name: "Blast Radius Risk Report", type: "Risk",
-    generated: "2025-01-27", status: "ready", size: "1.1 MB",
-    desc: "Top 10 high-risk nodes with cascading failure analysis",
-  },
-  {
-    id: "r3", name: "Platform Inventory — January 2025", type: "Inventory",
-    generated: "2025-01-25", status: "ready", size: "5.8 MB",
-    desc: "Full entity manifest across 13 platforms with relationship map",
-  },
-  {
-    id: "r4", name: "Vulnerability Remediation Status", type: "Security",
-    generated: "2025-01-22", status: "ready", size: "890 KB",
-    desc: "5 CVEs tracked: 1 critical, 2 high, 2 medium — with SLA status",
-  },
-  {
-    id: "r5", name: "Service Health Trend — 30 Days", type: "Health",
-    generated: "2025-01-20", status: "ready", size: "3.2 MB",
-    desc: "Health score trends across 12 services with degradation alerts",
-  },
-  {
-    id: "r6", name: "Executive Risk Posture — Board Pack", type: "Executive",
-    generated: "2025-01-15", status: "ready", size: "1.9 MB",
-    desc: "C-suite summary: risk heat map, compliance posture, top threats",
-  },
+/* ──────────────────────────────────────────────
+   Mock data — mirrors reference design
+   ────────────────────────────────────────────── */
+
+interface ReportDef {
+  name: string;
+  color: string;
+  desc: string;
+  sched: string;
+  last: string;
+  status: "ok" | "warn";
+  spark: number[];
+}
+
+const REPORTS: ReportDef[] = [
+  { name: "SOC 2 evidence pack",    color: "var(--p-accent)", desc: "Quarterly bundle of control evidence. Auto-collected from graph.",  sched: "Weekly · Mon 9am", last: "Mon",   status: "ok",   spark: [90, 91, 92, 93, 94, 95, 95, 96, 96, 96, 96, 96] },
+  { name: "Open incident summary",  color: "var(--p-red)",    desc: "Cross-team rollup of all incidents with MTTR and ownership.",       sched: "Daily · 9am",      last: "today", status: "ok",   spark: [2, 3, 1, 4, 2, 3, 2, 1, 3, 2, 3, 3] },
+  { name: "Vulnerability posture",  color: "var(--p-amber)",  desc: "CVE counts by severity, SBOM diff vs last week.",                   sched: "Weekly",           last: "Fri",   status: "ok",   spark: [24, 28, 22, 30, 18, 16, 12, 12, 12, 12, 12, 12] },
+  { name: "Connector health",       color: "var(--p-iris)",   desc: "Sync latency, failed pulls, schema drift across 13 platforms.",     sched: "Daily",            last: "today", status: "warn", spark: [100, 100, 98, 99, 97, 99, 100, 98, 96, 95, 94, 95] },
+  { name: "Cost by application",    color: "var(--p-green)",  desc: "AWS + Snowflake + Datadog spend by app and squad.",                sched: "Monthly · 1st",    last: "30d",   status: "ok",   spark: [40, 45, 50, 48, 55, 60, 58, 65, 70, 72, 74, 78] },
+  { name: "Top blast radii",        color: "#8B5CF6",         desc: "Services with largest downstream impact. Updated continuously.",   sched: "Real-time",        last: "now",   status: "ok",   spark: [12, 14, 17, 15, 16, 17, 17, 17, 17, 17, 17, 17] },
+  { name: "SLO error budget",       color: "var(--p-green)",  desc: "Monthly error budget burn rate by service and team.",              sched: "Weekly",           last: "Mon",   status: "ok",   spark: [100, 99, 98, 99, 98, 97, 96, 97, 98, 97, 96, 96] },
+  { name: "Change impact analysis", color: "#3B82F6",         desc: "Every deploy in the last 30d with downstream entity impact.",      sched: "Daily",            last: "today", status: "ok",   spark: [14, 12, 16, 18, 14, 12, 14, 14, 14, 14, 14, 14] },
 ];
 
-const SCHEDULED = [
-  { name: "Weekly Compliance Digest", cadence: "Every Monday 08:00", next: "Feb 3, 2025", type: "Compliance" },
-  { name: "Monthly Vulnerability Report", cadence: "1st of month", next: "Feb 1, 2025", type: "Security" },
-  { name: "Quarterly Board Pack", cadence: "Quarterly", next: "Apr 1, 2025", type: "Executive" },
+const SCHEDULE = [
+  { name: "SOC 2 evidence pack",   next: "Mon 9am",      recipients: 4,  format: "PDF" },
+  { name: "Open incident summary", next: "Tomorrow 9am", recipients: 12, format: "Slack + PDF" },
+  { name: "Vulnerability posture", next: "Next Fri",     recipients: 6,  format: "PDF" },
+  { name: "Connector health",      next: "Tomorrow 9am", recipients: 3,  format: "Email" },
+  { name: "Cost by application",   next: "Jun 1st",      recipients: 8,  format: "PDF + CSV" },
 ];
 
-const TYPE_COLORS: Record<string, string> = {
-  Compliance: "var(--p-green)", Risk: "var(--p-red)", Inventory: "#3B82F6",
-  Security: "var(--p-amber)", Health: "#8B5CF6", Executive: "var(--p-iris)",
-};
+const SUBSCRIBERS = [
+  { name: "jordan@",       count: 7 },
+  { name: "sara@",         count: 5 },
+  { name: "platform-eng@", count: 4 },
+  { name: "security@",     count: 3 },
+];
 
-const STAT_COLORS = ["var(--p-iris)", "var(--p-green)", "var(--p-amber)", "#8B5CF6"];
+const FORMAT_BARS = [
+  { label: "PDF",   count: 28, pct: 70, color: "var(--p-accent)" },
+  { label: "Slack", count: 20, pct: 50, color: "#4A154B" },
+  { label: "Email", count: 10, pct: 25, color: "var(--p-iris)" },
+];
 
-export default function Reports() {
-  const [generating, setGenerating] = useState(false);
+const IRIS_PROMPTS = [
+  "Summarize key risk indicators from all reports this week",
+  "Generate a board-ready infrastructure health summary",
+];
 
-  const handleGenerate = () => {
-    setGenerating(true);
-    setTimeout(() => setGenerating(false), 2000);
-  };
+/* ──────────────────────────────────────────────
+   SVG sparkline
+   ────────────────────────────────────────────── */
+
+function Sparkline({ values, color }: { values: number[]; color: string }) {
+  const w = 240;
+  const h = 40;
+  const p = 3;
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const range = max - min || 1;
+  const pts = values.map((v, i) => {
+    const x = p + ((w - 2 * p) * i) / (values.length - 1);
+    const y = h - p - ((v - min) / range) * (h - 2 * p);
+    return [x, y] as const;
+  });
+  const path = pts.map((pt, i) => `${i === 0 ? "M" : "L"} ${pt[0].toFixed(1)} ${pt[1].toFixed(1)}`).join(" ");
+  const area = `${path} L ${pts[pts.length - 1][0].toFixed(1)} ${h} L ${pts[0][0].toFixed(1)} ${h} Z`;
+  return (
+    <svg viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" className="w-full" style={{ height: 40 }}>
+      <path d={area} fill={color} opacity={0.12} />
+      <path d={path} stroke={color} strokeWidth={2} fill="none" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+/* ──────────────────────────────────────────────
+   UI primitives
+   ────────────────────────────────────────────── */
+
+function StatusPill({ status }: { status: "ok" | "warn" }) {
+  const isOk = status === "ok";
+  return (
+    <span
+      className="inline-flex items-center gap-1 px-1.5 py-[2px] rounded-md text-[10px] font-mono font-medium"
+      style={{
+        background: isOk ? "var(--p-green-subtle)" : "var(--p-amber-subtle)",
+        color: isOk ? "var(--p-green)" : "var(--p-amber)",
+        border: `1px solid ${isOk ? "var(--p-green)" : "var(--p-amber)"}`,
+        borderColor: "transparent",
+      }}
+    >
+      <span
+        className="inline-block w-1.5 h-1.5 rounded-full"
+        style={{ background: isOk ? "var(--p-green)" : "var(--p-amber)" }}
+      />
+      {isOk ? "ok" : "drift"}
+    </span>
+  );
+}
+
+function FormatPill({ children }: { children: React.ReactNode }) {
+  return (
+    <span
+      className="inline-flex items-center px-1.5 py-[2px] rounded-md text-[10px] font-mono"
+      style={{
+        background: "var(--p-bg-elevated)",
+        color: "var(--p-text-2)",
+        border: "1px solid var(--p-border)",
+      }}
+    >
+      {children}
+    </span>
+  );
+}
+
+function SidePanel({ title, children, accent }: { title: string; children: React.ReactNode; accent?: boolean }) {
+  return (
+    <div
+      className="rounded-xl p-4"
+      style={{
+        background: accent ? "var(--p-iris-subtle)" : "var(--p-bg-card)",
+        boxShadow: accent ? "inset 0 0 0 1px var(--p-iris-border)" : "var(--p-surface)",
+      }}
+    >
+      <h4
+        className="text-[10px] font-mono uppercase tracking-[0.12em] mb-2.5 font-medium"
+        style={{ color: accent ? "var(--p-iris)" : "var(--p-text-3)" }}
+      >
+        {title}
+      </h4>
+      <div className="flex flex-col">{children}</div>
+    </div>
+  );
+}
+
+function SideRow({
+  k, v, vColor, bar,
+}: {
+  k: string;
+  v: string | number;
+  vColor?: string;
+  bar?: { pct: number; color: string };
+}) {
+  return (
+    <div
+      className="flex items-center gap-2.5 py-[7px] text-[11px] font-mono"
+      style={{ borderBottom: "1px solid var(--p-border-subtle)" }}
+    >
+      <span className="flex-1 truncate" style={{ color: "var(--p-text-2)" }}>{k}</span>
+      {bar && (
+        <div className="flex-1 h-1 rounded-sm overflow-hidden" style={{ background: "var(--p-bg-elevated)" }}>
+          <span className="block h-full rounded-sm" style={{ width: `${bar.pct}%`, background: bar.color }} />
+        </div>
+      )}
+      <span className="font-semibold" style={{ color: vColor || "var(--p-text-1)" }}>{v}</span>
+    </div>
+  );
+}
+
+function HeaderButton({
+  variant = "ghost", onClick, children, icon,
+}: {
+  variant?: "ghost" | "primary" | "iris";
+  onClick?: () => void;
+  children: React.ReactNode;
+  icon?: React.ReactNode;
+}) {
+  const styles =
+    variant === "primary"
+      ? { bg: "var(--p-accent)", fg: "var(--p-text-inv)", border: "var(--p-accent)", glow: "0 0 18px var(--p-accent-glow)" }
+      : variant === "iris"
+      ? { bg: "var(--p-iris)", fg: "var(--p-bg-deep)", border: "var(--p-iris)", glow: "0 0 18px var(--p-iris-glow)" }
+      : { bg: "var(--p-bg-card)", fg: "var(--p-text-2)", border: "var(--p-border)", glow: "none" };
 
   return (
-    <div className="p-6 max-w-5xl mx-auto space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-bold" style={{ color: "var(--p-text-1)", fontFamily: '"Syne", sans-serif' }}>Reports</h1>
-          <p className="text-xs mt-0.5 font-mono" style={{ color: "var(--p-text-3)" }}>Compliance exports · risk summaries · board-ready</p>
+    <button
+      onClick={onClick}
+      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium transition-all"
+      style={{
+        background: styles.bg,
+        color: styles.fg,
+        border: `1px solid ${styles.border}`,
+        boxShadow: styles.glow,
+        fontFamily: '"Geist", system-ui, sans-serif',
+      }}
+    >
+      {icon}
+      {children}
+    </button>
+  );
+}
+
+/* ──────────────────────────────────────────────
+   Main page
+   ────────────────────────────────────────────── */
+
+function formatIcon(format: string) {
+  if (format.includes("Slack")) return <Mail size={13} style={{ color: "var(--p-text-3)" }} />;
+  if (format.includes("Email")) return <Mail size={13} style={{ color: "var(--p-text-3)" }} />;
+  return <FileText size={13} style={{ color: "var(--p-text-3)" }} />;
+}
+
+export default function Reports() {
+  const [, setGenerating] = useState(false);
+
+  return (
+    <div className="min-h-screen" style={{ background: "var(--p-bg-main)" }}>
+      <PageHead
+        eyebrow="INTELLIGENCE · ANALYTICS"
+        title="Reports"
+        subtitle={`${REPORTS.length} reports running on schedule. Every report is reproducible — runs against the canonical graph at any point in time. Iris can narrate any report.`}
+        actions={
+          <>
+            <HeaderButton>Templates</HeaderButton>
+            <HeaderButton variant="iris" icon={<Sparkles size={12} />}>Iris briefing</HeaderButton>
+            <HeaderButton variant="primary" icon={<Plus size={12} />} onClick={() => setGenerating(true)}>
+              New report
+            </HeaderButton>
+          </>
+        }
+      />
+
+      <div className="px-6 pb-8 space-y-4">
+        {/* Metrics */}
+        <div className="grid grid-cols-4 gap-3">
+          <MetricCard label="Active" value={REPORTS.length} />
+          <MetricCard label="Subscribers" value="42" />
+          <MetricCard label="Avg run time" value="1.4" unit="s" trend={0.2} trendDirection="up" />
+          <MetricCard label="Failed 7d" value="0" />
         </div>
-        <button
-          onClick={handleGenerate}
-          className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all"
-          style={{
-            background: generating ? "var(--p-iris-subtle)" : "var(--p-iris)",
-            color: generating ? "var(--p-iris)" : "var(--p-bg-deep)",
-            border: generating ? "1px solid var(--p-iris-border)" : "none",
-          }}
-        >
-          {generating ? <RefreshCw size={13} className="animate-spin" /> : <Plus size={13} />}
-          {generating ? "Generating…" : "New Report"}
-        </button>
-      </div>
 
-      {/* Summary cards */}
-      <div className="grid grid-cols-4 gap-4">
-        {[
-          { label: "Total Reports", value: "24" },
-          { label: "This Month", value: "6" },
-          { label: "Scheduled", value: "3" },
-          { label: "Avg Size", value: "2.5 MB" },
-        ].map((s, i) => (
-          <div key={s.label} className="p-4 rounded-xl" style={{ background: "var(--p-bg-card)", border: "1px solid var(--p-border)" }}>
-            <div className="text-[10px] uppercase tracking-wider mb-1" style={{ color: "var(--p-text-3)" }}>{s.label}</div>
-            <div className="text-2xl font-mono font-bold" style={{ color: STAT_COLORS[i] }}>{s.value}</div>
-          </div>
-        ))}
-      </div>
-
-      {/* Recent reports */}
-      <div>
-        <div className="text-[10px] uppercase tracking-[0.15em] mb-3 font-semibold" style={{ color: "var(--p-text-3)" }}>Recent Reports</div>
-        <div className="rounded-xl overflow-hidden" style={{ border: "1px solid var(--p-border)" }}>
-          {REPORTS.map((r, i) => {
-            const tc = TYPE_COLORS[r.type] || "var(--p-text-3)";
-            return (
-              <div key={r.id}
-                className="flex items-center gap-4 px-4 py-3.5 transition-colors"
-                style={{ borderBottom: i < REPORTS.length - 1 ? "1px solid var(--p-border)" : "none", background: "var(--p-bg-main)" }}
-                onMouseEnter={(e) => (e.currentTarget.style.background = "var(--p-bg-elevated)")}
-                onMouseLeave={(e) => (e.currentTarget.style.background = "var(--p-bg-main)")}>
-                <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
-                  style={{ background: "var(--p-bg-card)", border: "1px solid var(--p-border)" }}>
-                  <FileText size={15} style={{ color: tc }} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-0.5">
-                    <span className="text-xs font-semibold" style={{ color: "var(--p-text-1)" }}>{r.name}</span>
-                    <span className="text-[9px] px-1.5 py-0.5 rounded font-medium flex-shrink-0"
-                      style={{ background: "var(--p-bg-card)", color: tc, border: "1px solid var(--p-border)" }}>{r.type}</span>
+        {/* Two-col layout */}
+        <div className="grid gap-4" style={{ gridTemplateColumns: "1fr 280px" }}>
+          {/* LEFT — main */}
+          <div className="flex flex-col gap-4">
+            {/* Report cards 2x4 */}
+            <div className="grid grid-cols-2 gap-3">
+              {REPORTS.map(r => (
+                <div
+                  key={r.name}
+                  className="rounded-xl p-4 transition-all cursor-pointer"
+                  style={{ background: "var(--p-bg-card)", boxShadow: "var(--p-surface)" }}
+                  onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.boxShadow = "var(--p-surface-elevated)"; }}
+                  onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.boxShadow = "var(--p-surface)"; }}
+                >
+                  <div className="flex items-start justify-between gap-2 mb-2">
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                      <div
+                        className="w-7 h-7 rounded-md flex items-center justify-center flex-shrink-0"
+                        style={{ background: `color-mix(in srgb, ${r.color} 14%, transparent)`, color: r.color }}
+                      >
+                        <LineChart size={14} />
+                      </div>
+                      <div className="text-[13px] font-semibold truncate" style={{ color: "var(--p-text-1)" }}>
+                        {r.name}
+                      </div>
+                    </div>
+                    <StatusPill status={r.status} />
                   </div>
-                  <div className="text-[10px] truncate" style={{ color: "var(--p-text-3)" }}>{r.desc}</div>
+                  <div
+                    className="text-[12px] mb-2 leading-snug"
+                    style={{ color: "var(--p-text-2)", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}
+                  >
+                    {r.desc}
+                  </div>
+                  <Sparkline values={r.spark} color={r.color} />
+                  <div
+                    className="flex items-center justify-between pt-2.5 mt-2 text-[10.5px] font-mono"
+                    style={{ borderTop: "1px solid var(--p-border-subtle)", color: "var(--p-text-3)" }}
+                  >
+                    <span>{r.sched}</span>
+                    <span>last: {r.last}</span>
+                  </div>
                 </div>
-                <div className="text-right flex-shrink-0">
-                  <div className="text-[10px] font-mono" style={{ color: "var(--p-text-3)" }}>{r.generated}</div>
-                  <div className="text-[10px] font-mono" style={{ color: "var(--p-text-3)" }}>{r.size}</div>
-                </div>
-                <button
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-medium flex-shrink-0 transition-all"
-                  style={{ background: "var(--p-bg-border)", color: "var(--p-text-3)", border: "1px solid var(--p-border)" }}
-                  onMouseEnter={(e) => {
-                    (e.currentTarget as HTMLElement).style.color = "var(--p-iris)";
-                    (e.currentTarget as HTMLElement).style.borderColor = "var(--p-iris-border)";
-                  }}
-                  onMouseLeave={(e) => {
-                    (e.currentTarget as HTMLElement).style.color = "var(--p-text-3)";
-                    (e.currentTarget as HTMLElement).style.borderColor = "var(--p-border)";
-                  }}>
-                  <Download size={10} />
-                  Download
-                </button>
-              </div>
-            );
-          })}
-        </div>
-      </div>
+              ))}
+            </div>
 
-      {/* Scheduled reports */}
-      <div>
-        <div className="text-[10px] uppercase tracking-[0.15em] mb-3 font-semibold" style={{ color: "var(--p-text-3)" }}>Scheduled</div>
-        <div className="rounded-xl overflow-hidden" style={{ border: "1px solid var(--p-border)" }}>
-          {SCHEDULED.map((s, i) => {
-            const tc = TYPE_COLORS[s.type] || "var(--p-text-3)";
-            return (
-              <div key={s.name}
-                className="flex items-center gap-4 px-4 py-3 transition-colors"
-                style={{ borderBottom: i < SCHEDULED.length - 1 ? "1px solid var(--p-border)" : "none", background: "var(--p-bg-main)" }}
-                onMouseEnter={(e) => (e.currentTarget.style.background = "var(--p-bg-elevated)")}
-                onMouseLeave={(e) => (e.currentTarget.style.background = "var(--p-bg-main)")}>
-                <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: tc }} />
-                <div className="flex-1">
-                  <div className="text-xs font-medium" style={{ color: "var(--p-text-1)" }}>{s.name}</div>
-                  <div className="text-[10px] font-mono mt-0.5" style={{ color: "var(--p-text-3)" }}>{s.cadence}</div>
-                </div>
-                <div className="text-right">
-                  <div className="text-[10px]" style={{ color: "var(--p-text-3)" }}>Next run</div>
-                  <div className="text-[10px] font-mono font-medium" style={{ color: "var(--p-iris)" }}>{s.next}</div>
-                </div>
+            {/* Scheduled deliveries */}
+            <div
+              className="rounded-xl overflow-hidden"
+              style={{ background: "var(--p-bg-card)", boxShadow: "var(--p-surface)" }}
+            >
+              <div
+                className="flex items-center justify-between px-4 py-3"
+                style={{ borderBottom: "1px solid var(--p-border-subtle)" }}
+              >
+                <h4
+                  className="text-[10px] font-mono uppercase tracking-[0.12em] font-medium"
+                  style={{ color: "var(--p-text-3)" }}
+                >
+                  Upcoming scheduled deliveries
+                </h4>
               </div>
-            );
-          })}
+              <div>
+                {SCHEDULE.map((s, i) => (
+                  <div
+                    key={s.name}
+                    className="flex items-center gap-3 px-4 py-2.5"
+                    style={{ borderBottom: i < SCHEDULE.length - 1 ? "1px solid var(--p-border-subtle)" : "none" }}
+                  >
+                    {formatIcon(s.format)}
+                    <span className="flex-1 text-[12.5px] font-medium" style={{ color: "var(--p-text-1)" }}>
+                      {s.name}
+                    </span>
+                    <span className="text-[10.5px] font-mono" style={{ color: "var(--p-text-3)" }}>
+                      {s.recipients} recipients
+                    </span>
+                    <FormatPill>{s.format}</FormatPill>
+                    <span
+                      className="text-[11px] font-mono w-24 text-right"
+                      style={{ color: "var(--p-text-2)" }}
+                    >
+                      {s.next}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* RIGHT — sidebar */}
+          <div className="flex flex-col gap-4">
+            <SidePanel title="Run history · 7d">
+              <SideRow k="Total runs" v="58" />
+              <SideRow k="Successful" v="58" vColor="var(--p-green)" />
+              <SideRow k="Failed" v="0" />
+              <SideRow k="Avg runtime" v="1.4s" />
+              <SideRow k="Pages delivered" v="247" />
+            </SidePanel>
+
+            <SidePanel title="By format">
+              {FORMAT_BARS.map(b => (
+                <SideRow key={b.label} k={b.label} v={b.count} bar={{ pct: b.pct, color: b.color }} />
+              ))}
+            </SidePanel>
+
+            <SidePanel title="Top subscribers">
+              {SUBSCRIBERS.map(s => (
+                <SideRow key={s.name} k={s.name} v={`${s.count} reports`} />
+              ))}
+            </SidePanel>
+
+            <IrisQuickAsk prompts={IRIS_PROMPTS} context="reports" />
+          </div>
         </div>
       </div>
     </div>
