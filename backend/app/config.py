@@ -1,5 +1,7 @@
 from functools import lru_cache
+from typing import Optional
 
+from pydantic import AliasChoices, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -21,7 +23,11 @@ class PrismSettings(BaseSettings):
     # Application
     environment: str = "development"
     log_level: str = "debug"
-    cors_origins: str = "http://localhost:3000,http://localhost:3001,http://localhost:5173,http://127.0.0.1:3000,http://127.0.0.1:3001"
+    cors_origins: str = (
+        "http://localhost:3000,http://localhost:3001,http://localhost:3002,"
+        "http://localhost:5173,http://127.0.0.1:3000,http://127.0.0.1:3001,"
+        "http://127.0.0.1:3002"
+    )
 
     # Auth
     jwt_secret: str = "prism-dev-secret-change-in-production"
@@ -29,9 +35,16 @@ class PrismSettings(BaseSettings):
     # Multi-tenancy
     default_tenant: str = "demo"
 
-    # LLM
+    # LLM (ANTHROPIC_API_KEY and LLM_API_KEY are accepted via validation_alias)
     llm_provider: str = "anthropic"
-    llm_api_key: str | None = None
+    llm_api_key: Optional[str] = Field(
+        default=None,
+        validation_alias=AliasChoices(
+            "llm_api_key",
+            "ANTHROPIC_API_KEY",
+            "LLM_API_KEY",
+        ),
+    )
     llm_model: str = "claude-sonnet-4-20250514"
 
     @property

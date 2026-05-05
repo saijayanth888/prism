@@ -12,6 +12,7 @@ import Documents from "./pages/Documents";
 import HealthDashboard from "./pages/HealthDashboard";
 import IrisChat from "./pages/IrisChat";
 import Landing from "./pages/Landing";
+import WissDemo from "./pages/WissDemo";
 import Reports from "./pages/Reports";
 import Settings from "./pages/Settings";
 import TopologyExplorer from "./pages/TopologyExplorer";
@@ -30,6 +31,7 @@ export default function App() {
         <Routes>
           {/* Landing page — outside Shell */}
           <Route index element={<Landing />} />
+          <Route path="/wiss-demo" element={<WissDemo />} />
 
           {/* App shell — all authenticated routes */}
           <Route element={<Shell />}>

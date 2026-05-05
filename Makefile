@@ -1,4 +1,4 @@
-.PHONY: dev down logs seed test-backend test-frontend lint clean shell-api shell-neo4j demo
+.PHONY: dev down logs seed test test-backend test-integration test-backend-all test-frontend lint clean shell-api shell-neo4j demo
 
 # ─── Local development ──────────────────────────────────────────────────────
 
@@ -28,17 +28,23 @@ seed-large:
 # ─── Testing ────────────────────────────────────────────────────────────────
 
 test-backend:
+	docker-compose exec api pytest tests/cpt tests/test_health.py -q
+
+test-integration:
+	docker-compose exec api pytest tests/test_integration.py -q
+
+test-backend-all:
 	docker-compose exec api pytest
 
 test-backend-coverage:
-	docker-compose exec api pytest --cov=app --cov-report=term-missing
+	docker-compose exec api pytest tests/cpt tests/test_health.py --cov=app --cov-report=term-missing
 
 test-frontend:
-	docker-compose exec frontend npm test
+	@echo "Frontend has no npm test script yet."
 
 test:
 	$(MAKE) test-backend
-	$(MAKE) test-frontend
+	@echo "Optional: make test-integration (API + Neo4j + LLM) · make test-backend-all (full pytest)"
 
 # ─── Linting & formatting ───────────────────────────────────────────────────
 
@@ -75,7 +81,7 @@ shell-redis:
 
 demo: dev-detached seed
 	@echo ""
-	@echo "✓ Prism is running. Open http://localhost:3000 to explore."
+	@echo "✓ Prism is running. Open http://localhost:3002 to explore."
 	@echo ""
 	@echo "Demo flow:"
 	@echo "  1. Topology Explorer — 200+ nodes, 13 platforms"

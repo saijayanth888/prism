@@ -6,7 +6,16 @@ function uuid() {
   return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
 
-const WS_URL = `${window.location.protocol === "https:" ? "wss" : "ws"}://${window.location.hostname}:8000/api/v1/copilot/stream`;
+const API_BASE_URL = import.meta.env.VITE_API_URL ?? `http://${window.location.hostname}:8000`;
+
+function toWsUrl(httpUrl: string) {
+  const u = new URL(httpUrl);
+  u.protocol = u.protocol === "https:" ? "wss:" : "ws:";
+  u.pathname = "/api/v1/copilot/stream";
+  u.search = "";
+  u.hash = "";
+  return u.toString();
+}
 
 export function useIris() {
   const wsRef = useRef<WebSocket | null>(null);
@@ -33,7 +42,7 @@ export function useIris() {
     if (wsRef.current?.readyState === WebSocket.OPEN) return;
 
     try {
-      const ws = new WebSocket(WS_URL);
+      const ws = new WebSocket(toWsUrl(API_BASE_URL));
       wsRef.current = ws;
 
       ws.onopen = () => setConnected(true);
@@ -114,7 +123,7 @@ export function useIris() {
         // REST fallback
         setStreaming(true);
         try {
-          const resp = await fetch(`http://${window.location.hostname}:8000/api/v1/copilot/chat`, {
+          const resp = await fetch(`${API_BASE_URL}/api/v1/copilot/chat`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ message: text, persona, session_id: sessionId }),
